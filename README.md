@@ -18,9 +18,12 @@ Or install it yourself as:
 
 ## Usage
 
+### Javascript include
 ```javascript
 //= require jquery.tokeninput
 ```
+
+### Stylesheet include
 
 ```css
 //= require token-input
