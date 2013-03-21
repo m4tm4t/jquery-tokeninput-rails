@@ -26,17 +26,17 @@ Or install it yourself as:
 ### Stylesheet include
 
 ```css
-//= require token-input
+ *=  require token-input
 ```
 
 Or
 
 ```css
-//= require token-input-facebook
+ *= require token-input-facebook
 ```
 
 Or
 
 ```css
-//= require token-input-mac
+ *=  require token-input-mac
 ```
