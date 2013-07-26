@@ -33,6 +33,7 @@ var DEFAULT_SETTINGS = {
     placeholder: null,
     theme: null,
     zindex: 999,
+    inputIsDefault: false,
     resultsLimit: null,
 
     enableHTML: false,
@@ -168,6 +169,17 @@ var methods = {
     setOptions: function(options){
         $(this).data("settings", $.extend({}, $(this).data("settings"), options || {}));
         return this;
+    },
+    destroy: function () {
+        if(this.data("tokenInputObject")){
+            this.data("tokenInputObject").clear();
+            var tmpInput = this;
+            var closest = this.parent();
+            closest.empty();
+            tmpInput.show();
+            closest.append(tmpInput);
+            return tmpInput;
+        }
     }
 };
 
@@ -271,7 +283,10 @@ $.TokenList = function (input, url_or_data, settings) {
                 case KEY.RIGHT:
                 case KEY.UP:
                 case KEY.DOWN:
-                    if(!$(this).val()) {
+                    if($(input).data("settings").inputIsDefault && selected_dropdown_item === null){
+                        select_dropdown_item(dropdown.find('li').first());
+                    }
+                    else if(!$(this).val()) {
                         previous_token = input_token.prev();
                         next_token = input_token.next();
 
@@ -785,9 +800,9 @@ $.TokenList = function (input, url_or_data, settings) {
         dropdown
             .css({
                 position: "absolute",
-                top: $(token_list).offset().top + $(token_list).height(),
-                left: $(token_list).offset().left,
-                width: $(token_list).width(),
+                top: token_list.offset().top + token_list.outerHeight(),
+                left: token_list.offset().left,
+                width: token_list.width(),
                 'z-index': $(input).data("settings").zindex
             })
             .show();
@@ -861,7 +876,7 @@ $.TokenList = function (input, url_or_data, settings) {
                     this_li.addClass($(input).data("settings").classes.dropdownItem2);
                 }
 
-                if(index === 0) {
+                if(index === 0 && !$(input).data("settings").inputIsDefault) {
                     select_dropdown_item(this_li);
                 }
 
@@ -1042,3 +1057,4 @@ $.TokenList.Cache = function (options) {
     };
 };
 }(jQuery));
+
