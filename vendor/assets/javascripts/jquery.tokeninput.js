@@ -168,6 +168,17 @@ var methods = {
     setOptions: function(options){
         $(this).data("settings", $.extend({}, $(this).data("settings"), options || {}));
         return this;
+    },
+    destroy: function () {
+        if(this.data("tokenInputObject")){
+            this.data("tokenInputObject").clear();
+            var tmpInput = this;
+            var closest = this.parent();
+            closest.empty();
+            tmpInput.show();
+            closest.append(tmpInput);
+            return tmpInput;
+        }
     }
 };
 
@@ -551,7 +562,7 @@ $.TokenList = function (input, url_or_data, settings) {
         // Get width left on the current line
         var width_left = token_list.width() - input_box.offset().left - token_list.offset().left;
         // Enter new content into resizer and resize input accordingly
-        input_resizer.html(_escapeHTML(input_val));
+        input_resizer.html(_escapeHTML(input_val) || _escapeHTML(settings.placeholder));
         // Get maximum width, minimum the size of input and maximum the widget's width
         input_box.width(Math.min(token_list.width(),
                                  Math.max(width_left, input_resizer.width() + 30)));
@@ -785,9 +796,9 @@ $.TokenList = function (input, url_or_data, settings) {
         dropdown
             .css({
                 position: "absolute",
-                top: $(token_list).offset().top + $(token_list).height(),
-                left: $(token_list).offset().left,
-                width: $(token_list).width(),
+                top: token_list.offset().top + token_list.outerHeight(),
+                left: token_list.offset().left,
+                width: token_list.width(),
                 'z-index': $(input).data("settings").zindex
             })
             .show();
@@ -973,6 +984,11 @@ $.TokenList = function (input, url_or_data, settings) {
                       populate_dropdown(query, $(input).data("settings").jsonContainer ? results[$(input).data("settings").jsonContainer] : results);
                   }
                 };
+
+                // Provide a beforeSend callback
+                if (settings.onSend) {
+                  settings.onSend(ajax_params);
+                }
 
                 // Make the request
                 $.ajax(ajax_params);
