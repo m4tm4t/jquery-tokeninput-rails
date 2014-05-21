@@ -62,6 +62,7 @@ var DEFAULT_SETTINGS = {
     onResult: null,
     onCachedResult: null,
     onAdd: null,
+    canAdd: null,
     onFreeTaggingAdd: null,
     onDelete: null,
     onReady: null,
@@ -644,6 +645,17 @@ $.TokenList = function (input, url_or_data, settings) {
     // Add a token to the token list based on user input
     function add_token (item) {
         var callback = $(input).data("settings").onAdd;
+        if (settings.canAdd && $.isFunction(settings.canAdd)) {
+          if (!settings.canAdd.call(hidden_input, item)) {
+            // Clear input box
+            input_box.val("");
+
+            // Don't show the help dropdown, they've got the idea
+            hide_dropdown();
+
+            return;
+          }
+        }
 
         // See if the token already exists and select it if we don't want duplicates
         if(token_count > 0 && $(input).data("settings").preventDuplicates) {
