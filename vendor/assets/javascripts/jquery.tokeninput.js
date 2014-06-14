@@ -345,6 +345,7 @@ $.TokenList = function (input, url_or_data, settings) {
                 case KEY.ENTER:
                 case KEY.NUMPAD_ENTER:
                 case KEY.COMMA:
+                    console.log('comma pressed');
                     if($(input).data("settings").selectWithComma){
                         return false;
                     } else {
