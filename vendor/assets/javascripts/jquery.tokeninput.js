@@ -344,15 +344,10 @@ $.TokenList = function (input, url_or_data, settings) {
                 case KEY.TAB:
                 case KEY.ENTER:
                 case KEY.NUMPAD_ENTER:
-                case KEY.COMMA:
-                    console.log('comma pressed');
-                    if($(input).data("settings").selectWithComma){
-                        return false;
-                    } else {
-                      if(selected_dropdown_item) {
+                    if(selected_dropdown_item) {
                         add_token($(selected_dropdown_item).data("tokeninput"));
                         hidden_input.change();
-                      } else {
+                    } else {
                         if ($(input).data("settings").allowFreeTagging) {
                           if($(input).data("settings").allowTabOut && $(this).val() === "") {
                             return true;
@@ -367,10 +362,29 @@ $.TokenList = function (input, url_or_data, settings) {
                         }
                         event.stopPropagation();
                         event.preventDefault();
-                      }
                     }
                     return false;
-
+                case KEY.COMMA:
+                    if(selected_dropdown_item && $(input).data("settings").allowCommaToSubmit) {
+                        add_token($(selected_dropdown_item).data("tokeninput"));
+                        hidden_input.change();
+                    } else if($(input).data("settings").allowCommaToSubmit) {
+                        if ($(input).data("settings").allowFreeTagging) {
+                          if($(input).data("settings").allowTabOut && $(this).val() === "") {
+                            return true;
+                          } else {
+                            add_freetagging_tokens();
+                          }
+                        } else {
+                          $(this).val("");
+                          if($(input).data("settings").allowTabOut) {
+                            return true;
+                          }
+                        }
+                        event.stopPropagation();
+                        event.preventDefault();
+                    }
+                    return false;
                 case KEY.ESCAPE:
                   hide_dropdown();
                   return true;
