@@ -33,6 +33,7 @@ var DEFAULT_SETTINGS = {
     placeholder: null,
     theme: null,
     zindex: 999,
+    inputIsDefault: false,
     resultsLimit: null,
 
     enableHTML: false,
@@ -55,12 +56,13 @@ var DEFAULT_SETTINGS = {
 
     // Behavioral settings
     allowFreeTagging: false,
-    allowTabOut: false,
+    allowTabOut: true,
 
     // Callbacks
     onResult: null,
     onCachedResult: null,
     onAdd: null,
+    canAdd: null,
     onFreeTaggingAdd: null,
     onDelete: null,
     onReady: null,
@@ -282,7 +284,10 @@ $.TokenList = function (input, url_or_data, settings) {
                 case KEY.RIGHT:
                 case KEY.UP:
                 case KEY.DOWN:
-                    if(!$(this).val()) {
+                    if($(input).data("settings").inputIsDefault && selected_dropdown_item === null){
+                        select_dropdown_item(dropdown.find('li').first());
+                    }
+                    else if(!$(this).val()) {
                         previous_token = input_token.prev();
                         next_token = input_token.next();
 
@@ -339,28 +344,47 @@ $.TokenList = function (input, url_or_data, settings) {
                 case KEY.TAB:
                 case KEY.ENTER:
                 case KEY.NUMPAD_ENTER:
-                case KEY.COMMA:
-                  if(selected_dropdown_item) {
-                    add_token($(selected_dropdown_item).data("tokeninput"));
-                    hidden_input.change();
-                  } else {
-                    if ($(input).data("settings").allowFreeTagging) {
-                      if($(input).data("settings").allowTabOut && $(this).val() === "") {
-                        return true;
-                      } else {
-                        add_freetagging_tokens();
-                      }
+                    if(selected_dropdown_item) {
+                        add_token($(selected_dropdown_item).data("tokeninput"));
+                        hidden_input.change();
                     } else {
-                      $(this).val("");
-                      if($(input).data("settings").allowTabOut) {
-                        return true;
-                      }
+                        if ($(input).data("settings").allowFreeTagging) {
+                          if($(input).data("settings").allowTabOut && $(this).val() === "") {
+                            return true;
+                          } else {
+                            add_freetagging_tokens();
+                          }
+                        } else {
+                          $(this).val("");
+                          if($(input).data("settings").allowTabOut) {
+                            return true;
+                          }
+                        }
+                        event.stopPropagation();
+                        event.preventDefault();
                     }
-                    event.stopPropagation();
-                    event.preventDefault();
-                  }
-                  return false;
-
+                    return false;
+                case KEY.COMMA:
+                    if(selected_dropdown_item && $(input).data("settings").allowCommaToSubmit) {
+                        add_token($(selected_dropdown_item).data("tokeninput"));
+                        hidden_input.change();
+                    } else if($(input).data("settings").allowCommaToSubmit) {
+                        if ($(input).data("settings").allowFreeTagging) {
+                          if($(input).data("settings").allowTabOut && $(this).val() === "") {
+                            return true;
+                          } else {
+                            add_freetagging_tokens();
+                          }
+                        } else {
+                          $(this).val("");
+                          if($(input).data("settings").allowTabOut) {
+                            return true;
+                          }
+                        }
+                        event.stopPropagation();
+                        event.preventDefault();
+                    }
+                    return false;
                 case KEY.ESCAPE:
                   hide_dropdown();
                   return true;
@@ -640,6 +664,17 @@ $.TokenList = function (input, url_or_data, settings) {
     // Add a token to the token list based on user input
     function add_token (item) {
         var callback = $(input).data("settings").onAdd;
+        if (settings.canAdd && $.isFunction(settings.canAdd)) {
+          if (!settings.canAdd.call(hidden_input, item)) {
+            // Clear input box
+            input_box.val("");
+
+            // Don't show the help dropdown, they've got the idea
+            hide_dropdown();
+
+            return;
+          }
+        }
 
         // See if the token already exists and select it if we don't want duplicates
         if(token_count > 0 && $(input).data("settings").preventDuplicates) {
@@ -872,7 +907,7 @@ $.TokenList = function (input, url_or_data, settings) {
                     this_li.addClass($(input).data("settings").classes.dropdownItem2);
                 }
 
-                if(index === 0) {
+                if(index === 0 && !$(input).data("settings").inputIsDefault) {
                     select_dropdown_item(this_li);
                 }
 
@@ -1058,3 +1093,4 @@ $.TokenList.Cache = function (options) {
     };
 };
 }(jQuery));
+
